@@ -7,28 +7,17 @@ import { StyleSheet, Text, FlatList, View } from 'react-native';
 import useCachedResources from './hooks/useCachedResources';
 
 export default function App() {
-  const isLoadingComplete = useCachedResources();
-
-  const styles = StyleSheet.create({
-    input: {
-      height: 40,
-      margin: 6,
-      borderWidth: 1,
-      padding: 10,
-    },
-  });
-
-  const Item = ({text = 'Item'}) => (
-    <View>
-      <Text style={styles.input}>{text}</Text>
-    </View>
-  );
-
-  const renderItem = ({item = 'renderItem'}) => (
-    <Item text={item} />
-  );
-
   const [textList, setTextList] = useState(["Waiting..."]);
+
+  let dayMap = new Map<number, string>([
+    [1, 'Montag'],
+    [2, 'Dienstag'],
+    [3, 'Mittwoch'],
+    [4, 'Donnerstag'],
+    [5, 'Freitag'],
+    [6, 'Samstag'],
+    [7, 'Sonntag']
+  ]);
   
   // Read text from URL location
   const url = 'https://pretix.eu/Baeder/';
@@ -49,7 +38,7 @@ export default function App() {
 
       for (var ib in bathNrs) {
         fetches.push(
-          fetch(url + bathNrs[ib] + '/', {
+          fetch('https://thingproxy.freeboard.io/fetch/' + url + bathNrs[ib] + '/', {
             method: 'GET'
           }).then(response => {
             if (response.ok) {
@@ -74,10 +63,31 @@ export default function App() {
                 var out: string[] = [name];
                 
                 for(var i = 0; i < list.length; ++i) {
+                  var outStr: string = '';
+
                   var time = list[i].querySelector('time');
-                  if (time !== null) {
-                    out.push(time.innerText);
+                  var date = list[i].querySelector('span')?.getAttribute('data-time');
+                  var dateStr: string;
+
+                  if (date !== null && date !== undefined) {
+                    dateStr = date;
+                    var dateDate: Date = new Date(dateStr);
+                    outStr += dayMap.get(dateDate.getDay()) + ', ';
                   }
+
+                  if (time !== null) {
+                    outStr += time.innerText + ', ';
+                  }
+
+                  if (date !== null && date !== undefined) {
+                    dateStr = date;
+                    var dateDate: Date = new Date(dateStr);
+                    outStr += ("00" + dateDate.getDay()).slice(-2) + '.'
+                      + ("00" + dateDate.getMonth()).slice(-2) + '.'
+                      + dateDate.getFullYear();
+                  }
+
+                  out.push(outStr);
                 }
                 
                 return(out);
@@ -111,12 +121,43 @@ export default function App() {
     .catch(console.error);
   }, [makeAPICall])
 
+
+  const isLoadingComplete = useCachedResources();
+
+  const styles = StyleSheet.create({
+    title: {
+      height: 40,
+      margin: 6,
+      borderWidth: 1,
+      padding: 10,
+      fontWeight: 'bold',
+      color: '#dc143c',
+    },
+    item: {
+      height: 40,
+      margin: 6,
+      borderWidth: 1,
+      padding: 10,
+    },
+  });
+
+  const Item = ({text = 'Item'}) => (
+    <View>
+      <Text style={styles.item}>{text}</Text>
+    </View>
+  );
+
+  const renderItem = ({item = 'renderItem'}) => (
+    <Item text={item} />
+  );
+
   if (!isLoadingComplete) {
     return null;
   } else {
     return (
       <SafeAreaProvider>
         <StatusBar />
+        <Text style={styles.title}>Berlin Indoor Swimming Pool Filter</Text>
         <FlatList data={textList} renderItem={renderItem}/>
       </SafeAreaProvider>
     );
