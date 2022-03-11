@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Component } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -28,9 +28,9 @@ export default function App() {
   //for (var i = 1; i < 180; ++i) {
   //  bathNrs.push(i.toString());
   //}
-    //'1', '2', '7', '9', '11', '15', '17', '18', '19', '21', '24', '26', '27', '28', '29',
-    //'30', '31', '34', '38', '42', '43', '45', '46', '47', '48', '49', '51', '52', '54', '60',
-    //'61', '62', '64', ];
+  //'1', '2', '7', '9', '11', '15', '17', '18', '19', '21', '24', '26', '27', '28', '29',
+  //'30', '31', '34', '38', '42', '43', '45', '46', '47', '48', '49', '51', '52', '54', '60',
+  //'61', '62', '64'
   
   const makeAPICall = useCallback(async () => {
     do {
@@ -38,7 +38,7 @@ export default function App() {
 
       for (var ib in bathNrs) {
         fetches.push(
-          fetch('https://thingproxy.freeboard.io/fetch/' + url + bathNrs[ib] + '/', {
+          fetch('http://localhost:5000/api/' + url + bathNrs[ib] + '/', {
             method: 'GET'
           }).then(response => {
             if (response.ok) {
@@ -93,6 +93,10 @@ export default function App() {
                 return(out);
               }
             }
+          }).catch(error => {
+            console.log('Error Msg: \n' + error);
+            var out: string[] = [error.toString()];
+            return(out);
           })
         );
       }
@@ -119,7 +123,7 @@ export default function App() {
   useEffect(() => {
     makeAPICall()
     .catch(console.error);
-  }, [makeAPICall])
+  }, [makeAPICall]);
 
 
   const isLoadingComplete = useCachedResources();
