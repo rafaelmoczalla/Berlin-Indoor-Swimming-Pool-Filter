@@ -6,14 +6,13 @@
     "yarn": "1.22.17"
   },
   "scripts": {
-    "expo-start": "expo start",
-    "build": "expo build:web",
-    "start": "expo start --web",
+    "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "build": "expo build:web"
   },
   "jest": {
     "preset": "jest-expo"
