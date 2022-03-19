@@ -38,9 +38,11 @@ export default function App() {
 
       for (var ib in bathNrs) {
         fetches.push(
-          fetch('http://localhost:5000/api/' + url + bathNrs[ib] + '/', {
-            method: 'GET'
+          fetch('https://berlin-indoor-swimming-backend.herokuapp.com/' + url + bathNrs[ib] + '/', {//'http://localhost:5000/api/' + or 'https://backend-rafaelmoczalla.vercel.app/api/' +
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json'}
           }).then(response => {
+            console.log('res: ' + response);
             if (response.ok) {
               return response.text();
             } else {

@@ -2,14 +2,17 @@
   "name": "berlinindoorswimmingpoolfilter",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
+  "engines": {
+    "yarn": "1.22.17"
+  },
   "scripts": {
-    "start": "expo start",
+    "expo-start": "expo start",
+    "start": "expo start --web",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "test": "jest --watchAll",
-    "deploy": "expo build:web"
+    "test": "jest --watchAll"
   },
   "jest": {
     "preset": "jest-expo"
