@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback, Component } from 'react';
+import React, { useEffect, useState, useCallback, Component } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet, Text, FlatList, View } from 'react-native';
+import { StyleSheet, Text, FlatList, View, Linking } from 'react-native';
 
 import useCachedResources from './hooks/useCachedResources';
 
@@ -10,13 +10,13 @@ export default function App() {
   const [textList, setTextList] = useState(["Waiting..."]);
 
   let dayMap = new Map<number, string>([
+    [0, 'Sonntag'],
     [1, 'Montag'],
     [2, 'Dienstag'],
     [3, 'Mittwoch'],
     [4, 'Donnerstag'],
     [5, 'Freitag'],
-    [6, 'Samstag'],
-    [7, 'Sonntag']
+    [6, 'Samstag']
   ]);
   
   // Read text from URL location
@@ -62,7 +62,7 @@ export default function App() {
                   name = bath[0].textContent.trim();
                 }
                 
-                var out: string[] = [name];
+                var out: string[] = [];//[name]; //this is to add the bath name, but it is uncommented, as we only look for one and this one is specially treated by adding a hyperlink to the text
                 
                 for(var i = 0; i < list.length; ++i) {
                   var outStr: string = '';
@@ -137,14 +137,21 @@ export default function App() {
       borderWidth: 1,
       padding: 10,
       fontWeight: 'bold',
-      color: '#dc143c',
+      color: '#dc143c'
     },
     item: {
       height: 40,
       margin: 6,
       borderWidth: 1,
-      padding: 10,
+      padding: 10
     },
+    link: {
+      height: 40,
+      margin: 6,
+      borderWidth: 1,
+      padding: 10,
+      color: 'blue'
+    }
   });
 
   const Item = ({text = 'Item'}) => (
@@ -164,6 +171,9 @@ export default function App() {
       <SafeAreaProvider>
         <StatusBar />
         <Text style={styles.title}>Berlin Indoor Swimming Pool Filter</Text>
+        <Text style={styles.link} onPress={() => Linking.openURL(url + bathNrs[0])}>
+          Schwimm- und Sprunghalle im Europasportpark
+        </Text>
         <FlatList data={textList} renderItem={renderItem}/>
       </SafeAreaProvider>
     );
