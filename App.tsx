@@ -172,7 +172,7 @@ export default function App() {
         <StatusBar />
         <Text style={styles.title}>Berlin Indoor Swimming Pool Filter</Text>
         <Text style={styles.link} onPress={() => Linking.openURL(url + bathNrs[0])}>
-          Test: Schwimm- und Sprunghalle im Europasportpark
+          Schwimm- und Sprunghalle im Europasportpark
         </Text>
         <FlatList data={textList} renderItem={renderItem}/>
       </SafeAreaProvider>
