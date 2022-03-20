@@ -1,167 +1,263 @@
 import React, { useEffect, useState, useCallback, Component } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
+import SelectDropdown from 'react-native-select-dropdown'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet, Text, FlatList, View, Linking } from 'react-native';
+import { StyleSheet, Text, SectionList, Linking, SectionListData, View, ScrollView } from 'react-native';
 
 import useCachedResources from './hooks/useCachedResources';
 
-export default function App() {
-  const [textList, setTextList] = useState(["Waiting..."]);
+const dayMap = new Map<number, string>([
+  [0, 'Sunday'],
+  [1, 'Monday'],
+  [2, 'Tuesday'],
+  [3, 'Wednesday'],
+  [4, 'Thursday'],
+  [5, 'Friday'],
+  [6, 'Saturday']
+]);
 
-  let dayMap = new Map<number, string>([
-    [0, 'Sonntag'],
-    [1, 'Montag'],
-    [2, 'Dienstag'],
-    [3, 'Mittwoch'],
-    [4, 'Donnerstag'],
-    [5, 'Freitag'],
-    [6, 'Samstag']
-  ]);
-  
-  // Read text from URL location
-  const url = 'https://pretix.eu/Baeder/';
-  
-  let bathNrs: string[];
-  bathNrs = [ '79' ];
+// Read text from URL location
+const proxy = 'https://berlin-indoor-swimming-backend.herokuapp.com/';//'http://localhost:5000/api/' or 'https://berlin-indoor-swimming-backend.herokuapp.com/'
+const url = 'https://pretix.eu/Baeder/';
 
-  //for (var i = 1; i < 180; ++i) {
-  //  bathNrs.push(i.toString());
-  //}
-  //'1', '2', '7', '9', '11', '15', '17', '18', '19', '21', '24', '26', '27', '28', '29',
-  //'30', '31', '34', '38', '42', '43', '45', '46', '47', '48', '49', '51', '52', '54', '60',
-  //'61', '62', '64'
-  
-  const makeAPICall = useCallback(async () => {
-    do {
-      var fetches: any[] = [];
+type poolData = {
+  title: string;
+  url: string;
+  data: string[];
+};
 
-      for (var ib in bathNrs) {
-        fetches.push(
-          fetch('https://berlin-indoor-swimming-backend.herokuapp.com/' + url + bathNrs[ib] + '/', {//'http://localhost:5000/api/' + or 'https://backend-rafaelmoczalla.vercel.app/api/' +
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json'}
-          }).then(response => {
-            console.log('res: ' + response);
-            if (response.ok) {
-              return response.text();
-            } else {
-              console.error('Cannot communicate with website.');
-            }
+// Function to get all free slots from a indoor bath pool
+function getFreeSlots(index: string, poolName: string): Promise<poolData | null> {
+  return fetch(proxy + url + index + '/', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  }).then(async (response) => {
+    if (response.ok) {
+      var text = await response.text();
 
-            return 'failed';
-          }).then(text => {
-            if (text !== 'failed') {
-              var parser = new DOMParser();
-              var doc = parser.parseFromString(text, 'text/html');
-              var list = doc.getElementsByClassName('event  available');
-              if (list !== null) {
-                var bath = doc.getElementsByClassName('content-header');
-                var name = "Missing Name";
-                if (bath[0].textContent !== null) {
-                  name = bath[0].textContent.trim();
-                }
-                
-                var out: string[] = [];//[name]; //this is to add the bath name, but it is uncommented, as we only look for one and this one is specially treated by adding a hyperlink to the text
-                
-                for(var i = 0; i < list.length; ++i) {
-                  var outStr: string = '';
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(text, 'text/html');
+      var list = doc.getElementsByClassName('event  available');
 
-                  var time = list[i].querySelector('time');
-                  var date = list[i].querySelector('span')?.getAttribute('data-time');
-                  var dateStr: string;
+      if (list !== null) {
+        var name = poolName;
+        var link = response.url.substring(proxy.length);
 
-                  if (date !== null && date !== undefined) {
-                    dateStr = date;
-                    var dateDate: Date = new Date(dateStr);
-                    outStr += dayMap.get(dateDate.getDay()) + ', ';
-                  }
+        var data: string[] = [];
 
-                  if (time !== null) {
-                    outStr += time.innerText + ', ';
-                  }
+        for (var i = 0; i < list.length; ++i) {
+          var outStr: string = '';
 
-                  if (date !== null && date !== undefined) {
-                    dateStr = date;
-                    var dateDate: Date = new Date(dateStr);
-                    outStr += ("00" + dateDate.getDay()).slice(-2) + '.'
-                      + ("00" + dateDate.getMonth()).slice(-2) + '.'
-                      + dateDate.getFullYear();
-                  }
+          var time = list[i].querySelector('time');
+          var date;
+          list[i].querySelectorAll('span').forEach((element: HTMLSpanElement) => {
+            if (element.hasAttribute('data-time'))
+              date = element.getAttribute('data-time');
+          });
+          var dateStr: string;
 
-                  out.push(outStr);
-                }
-                
-                return(out);
-              }
-            }
-          }).catch(error => {
-            console.log('Error Msg: \n' + error);
-            var out: string[] = [error.toString()];
-            return(out);
-          })
-        );
-      }
-
-      Promise.all(fetches).then(function(list) {
-        var outList: string[] = [];
-        
-        for (var strs in list) {
-          if (list[strs] !== 'no slots free' && list[strs] !== 'failed') {
-            for (var str in list[strs]) {
-              outList.push(list[strs][str]);
-            }
+          if (date !== null && date !== undefined) {
+            dateStr = date;
+            var dateDate: Date = new Date(dateStr);
+            outStr += dayMap.get(dateDate.getDay()) + ', ';
           }
+
+          if (time !== null) {
+            outStr += time.innerText + ', ';
+          }
+
+          if (date !== null && date !== undefined) {
+            dateStr = date;
+            var dateDate: Date = new Date(dateStr);
+            outStr += ("00" + dateDate.getDay()).slice(-2) + '.'
+              + ("00" + dateDate.getMonth()).slice(-2) + '.'
+              + dateDate.getFullYear();
+          } else {
+            console.log(name + '    ' + date);
+          }
+
+          data.push(outStr);
         }
-        
-        setTextList(outList);
+
+        if (data.length == 0) {
+          var out: poolData = {
+            title: name,
+            url: link,
+            data: [ 'No free slots' ],
+          };
+  
+          return out;
+        }
+
+        var out: poolData = {
+          title: name,
+          url: link,
+          data: data,
+        };
+
+        return out;
+      } else {
+        return null;
+      }
+    } else {
+      console.error('Cannot communicate with website.');
+      return null;
+    }
+  }).catch(error => {
+    console.log('Error Msg: \n' + error);
+    return null;
+  });
+};
+
+export default function App() {
+  const appName = 'Berlin Indoor Swimming Pool Filter';
+  const [textList, setTextList] = useState<poolData[]>([]);
+  const defaultPool = '79';
+  const [selectedPool, setSelectedPool] = useState<string | null>(defaultPool);
+  
+  // list of indoor swimming pool indexes
+  const pools = new Map<string, string>([
+    [ '1', 'Stadtbad Mitte' ],
+    [ '2', 'Schwimmhalle Fischerinsel' ],
+    [ '7', 'Sommerbad Humboldthain' ],
+    [ '9', 'Kombibad Seestraße (Halle)' ],
+    [ '11', 'Schwimmhalle Thomas-Mann-Straße' ],
+    [ '15', 'Wellenbad am Spreewaldplatz' ],
+    [ '17', 'Sommerbad Kreuzberg' ],
+    [ '18', 'Stadtbad Schöneberg' ],
+    [ '19', 'Sport - und Lehrschwimmhalle Schöneberg' ],
+    [ '21', 'Stadtbad Charlottenburg "Alte Halle"' ],
+    [ '24', 'Sommerbad Olympiastadion' ],
+    [ '26', 'Stadtbad Spandau Nord' ],
+    [ '27', 'Sommerbad Staaken' ],
+    [ '28', 'Kombibad Spandau Süd (Halle)' ],
+    [ '29', 'Stadtbad Wilmersdorf 1' ],
+    [ '30', 'Stadtbad Wilmersdorf 2' ],
+    [ '31', 'Sommerbad Wilmersdorf' ],
+    [ '34', 'Schwimmhalle Hüttenweg' ],
+    [ '38', 'Stadtbad Märkisches Viertel' ],
+    [ '42', 'Stadtbad Lankwitz' ],
+    [ '43', 'Schwimmhalle Finckensteinallee (Bad nur für Schwimmer geeignet)' ],
+    [ '45', 'Sommerbad Insulaner' ],
+    [ '46', 'Stadtbad Tempelhof' ],
+    [ '47', 'Kombibad Mariendorf (Halle)' ],
+    [ '48', 'Sommerbad Mariendorf (Rixdorfer Straße)' ],
+    [ '49', 'Stadtbad Neukölln' ],
+    [ '51', 'Sommerbad Neukölln' ],
+    [ '52', 'Kombibad Gropiusstadt (Halle)' ],
+    [ '54', 'Schwimmhalle Baumschulenweg' ],
+    [ '60', 'Kleine Schwimmhalle Wuhlheide' ],
+    [ '61', 'Schwimmhalle Allendeviertel' ],
+    [ '62', 'Sommerbad Wuhlheide' ],
+    [ '64', 'Schwimmhalle Sewanstraße' ],
+    [ '68', 'Schwimmhalle Buch' ],
+    [ '70', 'Sommerbad Pankow' ],
+    [ '71', 'Schwimmhalle Helene-Weigel-Platz' ],
+    [ '74', 'Schwimmhalle Zingster Straße' ],
+    [ '76', 'Schwimmhalle Kaulsdorf' ],
+    [ '79', 'Schwimm- und Sprunghalle im Europasportpark' ],
+    [ '81', 'Schwimmhalle Kreuzberg' ]
+  ]);
+
+  const poolList = Array.from(pools.values());
+  poolList.unshift('All');
+  const indexList = Array.from(pools.keys());
+  indexList.unshift('0');
+
+  const fetchSlots = () => {
+    var fetches: Promise<poolData | null>[] = [];
+
+    if (selectedPool === null) {
+      pools.forEach((value: string, key: string) => {
+        fetches.push(getFreeSlots(key, value));
       });
+    } else {
+      var name = pools.get(selectedPool);
+      if (name !== undefined)
+        fetches.push(getFreeSlots(selectedPool, name));
+    } 
 
-      await new Promise(f => setTimeout(f, 60000));
-    } while (true);
-  }, []);
+    // collect data
+    Promise.all(fetches).then((list: (poolData | null)[]) => {
+      var outList: poolData[] = [];
+      
+      list.forEach((item: (poolData | null)) => {
+        // only swimming pools with free spots
+        if (item !== null)
+          outList.push(item);
+      });
+      
+      setTextList(outList);
+    });
+  };
 
-  // Send an async HTTP Get request to the url
+  // Send an async HTTP Get requests to the urls
   useEffect(() => {
-    makeAPICall()
-    .catch(console.error);
-  }, [makeAPICall]);
+    fetchSlots();
+
+    const id = setInterval(() => fetchSlots(), 60000);
+
+    return () => clearInterval(id);
+  }, [selectedPool]);
 
 
   const isLoadingComplete = useCachedResources();
 
+  const width = 480;
+
   const styles = StyleSheet.create({
     title: {
-      height: 40,
+      height: 60,
+      width: width,
       margin: 6,
       borderWidth: 1,
       padding: 10,
+      fontSize: 26,
       fontWeight: 'bold',
-      color: '#dc143c'
+      color: '#dc143c',
+      textAlign: 'center'
     },
     item: {
       height: 40,
-      margin: 6,
-      borderWidth: 1,
-      padding: 10
-    },
-    link: {
-      height: 40,
+      width: width,
       margin: 6,
       borderWidth: 1,
       padding: 10,
-      color: 'blue'
-    }
+      textAlign: 'center'
+    },
+    link: {
+      height: 40,
+      width: width,
+      margin: 6,
+      borderWidth: 1,
+      padding: 10,
+      color: 'blue',
+      textAlign: 'center'
+    },
+    dropDown: {
+      height: 40,
+      width: width,
+      margin: 6,
+      borderWidth: 1,
+      padding: 10,
+      textAlign: 'center'
+    },
+    container: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center'
+    },
   });
 
-  const Item = ({text = 'Item'}) => (
-    <View>
-      <Text style={styles.item}>{text}</Text>
-    </View>
+  const renderItem = ({item = 'renderItem'}) => (
+    <Text style={styles.item}>{item}</Text>
   );
 
-  const renderItem = ({item = 'renderItem'}) => (
-    <Item text={item} />
+  const renderSection = (info: { section: SectionListData<string, poolData>; }) => (
+    <Text style={styles.link} onPress={() => Linking.openURL(info.section.url)}>
+      {info.section.title}
+    </Text>
   );
 
   if (!isLoadingComplete) {
@@ -170,12 +266,34 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <StatusBar />
-        <Text style={styles.title}>Berlin Indoor Swimming Pool Filter</Text>
-        <Text style={styles.link} onPress={() => Linking.openURL(url + bathNrs[0])}>
-          Schwimm- und Sprunghalle im Europasportpark
-        </Text>
-        <FlatList data={textList} renderItem={renderItem}/>
+        <Text style={styles.title}>{appName}</Text>
+        <SelectDropdown
+          buttonStyle={styles.dropDown}
+          data={poolList}
+          defaultValue={pools.get(defaultPool)}
+          onSelect={(selectedItem, index) => {
+            if (selectedItem === 'All') {
+              setSelectedPool(null);
+            } else {
+              var i = indexList[index];
+              if (i !== null && i !== undefined) {
+                setSelectedPool(i);
+              }
+            }
+          }}
+          buttonTextAfterSelection={(selectedItem, index) => {
+            return selectedItem;
+          }}
+          rowTextForSelection={(item, index) => {
+            return item;
+          }}
+        />
+        <SectionList sections={textList}
+          keyExtractor={(item, index) => item + index}
+          renderItem={renderItem}
+          renderSectionHeader={renderSection}
+        />
       </SafeAreaProvider>
     );
   }
-}
+};
