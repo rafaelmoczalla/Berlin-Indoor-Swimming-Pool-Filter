@@ -1,6 +1,7 @@
 {
   "name": "berlinindoorswimmingpoolfilter",
   "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
   "engines": {
     "yarn": "1.22.17"
   },
@@ -11,6 +12,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "eject": "expo eject",
+    "test": "jest --watchAll",
     "build": "expo build:web",
     "prebuild": "expo prebuild",
     "buildAPK": "turtle build:android --type apk --output ./out/swimmingPoolFilter.apk --keystore-path ../keystore/moczallr.jks --keystore-alias moczallr"
@@ -19,7 +21,6 @@
     "preset": "jest-expo"
   },
   "dependencies": {
-    "@expo/config-plugins": "^4.1.0",
     "@expo/config-types": "^44.0.0",
     "@expo/vector-icons": "^12.0.0",
     "@react-navigation/bottom-tabs": "^6.0.5",
