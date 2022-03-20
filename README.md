@@ -15,7 +15,7 @@ Run the app by first starting an adb server on windows and connect in WSL. After
 adb tcpip 5555
 adb connect [ip device]:5555
 yarn buildAPK
-asb install swimmingPoolFilter.apk
+asb install ./out/swimmingPoolFilter.apk
 ```
 For windows you can use this [version](https://dl.google.com/android/repository/platform-tools-latest-windows.zip) of adb that has a binary ready to execute.
 
