@@ -58,17 +58,14 @@ function getFreeSlots(index: string, poolName: string): Promise<poolData | null>
           var time = 'XX:XX';
           if (times !== null)
             time = times[0]?.innerHTML;
-          var date;
+          var date:(string | undefined);
           list[i].getElementsByTagName('span')?.forEach((element: DomParser.Node) => {
             if (element.getAttribute('data-time') !== null)
-              date = element.getAttribute('data-time');
+              date = element.getAttribute('data-time')?.toString();
           });
-          var dateStr: string;
 
           if (date !== null && date !== undefined) {
-            dateStr = date;
-            var dateDate: Date = new Date(dateStr);
-            outStr += dayMap.get(dateDate.getDay()) + ', ';
+            outStr += dayMap.get(new Date(date).getDay()) + ', ';
           }
 
           if (time !== null) {
@@ -76,11 +73,9 @@ function getFreeSlots(index: string, poolName: string): Promise<poolData | null>
           }
 
           if (date !== null && date !== undefined) {
-            dateStr = date;
-            var dateDate: Date = new Date(dateStr);
-            outStr += ("00" + dateDate.getDay()).slice(-2) + '.'
-              + ("00" + dateDate.getMonth()).slice(-2) + '.'
-              + dateDate.getFullYear();
+            outStr += date.substring(8, 10) + '.'
+              + date.substring(5, 7) + '.'
+              + date.substring(0, 4);
           } else {
             console.log(name + '    ' + date);
           }
