@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback, Component } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
 import SelectDropdown from 'react-native-select-dropdown'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet, Text, SectionList, Linking, SectionListData, View, ScrollView } from 'react-native';
+import { Platform, StyleSheet, Text, SectionList, Linking, SectionListData, View, ScrollView } from 'react-native';
 
 import useCachedResources from './hooks/useCachedResources';
+import DomParser from 'dom-parser';
 
 const dayMap = new Map<number, string>([
   [0, 'Sunday'],
@@ -18,7 +19,9 @@ const dayMap = new Map<number, string>([
 ]);
 
 // Read text from URL location
-const proxy = 'https://berlin-indoor-swimming-backend.herokuapp.com/';//'http://localhost:5000/api/' or 'https://berlin-indoor-swimming-backend.herokuapp.com/'
+var proxy = 'https://berlin-indoor-swimming-backend.herokuapp.com/';//'http://localhost:5000/api/' or 'https://berlin-indoor-swimming-backend.herokuapp.com/'
+if (Platform.OS === "android")
+  proxy = '';
 const url = 'https://pretix.eu/Baeder/';
 
 type poolData = {
@@ -31,13 +34,15 @@ type poolData = {
 function getFreeSlots(index: string, poolName: string): Promise<poolData | null> {
   return fetch(proxy + url + index + '/', {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8'
+    }
   }).then(async (response) => {
     if (response.ok) {
       var text = await response.text();
 
-      var parser = new DOMParser();
-      var doc = parser.parseFromString(text, 'text/html');
+      var parser = new DomParser();
+      var doc = parser.parseFromString(text);
       var list = doc.getElementsByClassName('event  available');
 
       if (list !== null) {
@@ -49,10 +54,13 @@ function getFreeSlots(index: string, poolName: string): Promise<poolData | null>
         for (var i = 0; i < list.length; ++i) {
           var outStr: string = '';
 
-          var time = list[i].querySelector('time');
+          var times: DomParser.Node[] | null = list[i].getElementsByTagName('time');
+          var time = 'XX:XX';
+          if (times !== null)
+            time = times[0]?.innerHTML;
           var date;
-          list[i].querySelectorAll('span').forEach((element: HTMLSpanElement) => {
-            if (element.hasAttribute('data-time'))
+          list[i].getElementsByTagName('span')?.forEach((element: DomParser.Node) => {
+            if (element.getAttribute('data-time') !== null)
               date = element.getAttribute('data-time');
           });
           var dateStr: string;
@@ -64,7 +72,7 @@ function getFreeSlots(index: string, poolName: string): Promise<poolData | null>
           }
 
           if (time !== null) {
-            outStr += time.innerText + ', ';
+            outStr += time + ', ';
           }
 
           if (date !== null && date !== undefined) {
@@ -84,7 +92,7 @@ function getFreeSlots(index: string, poolName: string): Promise<poolData | null>
           var out: poolData = {
             title: name,
             url: link,
-            data: [ 'No free slots' ],
+            data: [ 'Booked Out' ],
           };
   
           return out;
@@ -204,43 +212,66 @@ export default function App() {
 
   const isLoadingComplete = useCachedResources();
 
-  const width = 480;
+  const width = '99%';
+  const margin = '0.5%';
 
   const styles = StyleSheet.create({
     title: {
-      height: 60,
-      width: width,
-      margin: 6,
-      borderWidth: 1,
-      padding: 10,
       fontSize: 26,
       fontWeight: 'bold',
-      color: '#dc143c',
-      textAlign: 'center'
+      textAlign: 'center',
+      color: '#dc143c'
+    },
+    titleBox: {
+      height: 80,
+      width: width,
+      margin: margin,
+      borderWidth: 1,
+      alignSelf: 'center',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlignVertical: 'center',
+      alignContent: 'center',
+      textAlign: 'center',
     },
     item: {
       height: 40,
       width: width,
-      margin: 6,
+      margin: margin,
       borderWidth: 1,
-      padding: 10,
-      textAlign: 'center'
+      alignSelf: 'center',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlignVertical: 'center',
+      alignContent: 'center',
+      textAlign: 'center',
     },
     link: {
+      textAlign: 'center',
+      color: 'blue'
+    },
+    linkBox: {
       height: 40,
       width: width,
-      margin: 6,
+      margin: margin,
       borderWidth: 1,
-      padding: 10,
-      color: 'blue',
+      alignSelf: 'center',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlignVertical: 'center',
+      alignContent: 'center',
+      textAlign: 'center'
+    },
+    button: {
+      height: 40,
+      width: width,
+      margin: margin,
+      borderWidth: 1,
       textAlign: 'center'
     },
     dropDown: {
-      height: 40,
       width: width,
-      margin: 6,
       borderWidth: 1,
-      padding: 10,
       textAlign: 'center'
     },
     container: {
@@ -251,13 +282,15 @@ export default function App() {
   });
 
   const renderItem = ({item = 'renderItem'}) => (
-    <Text style={styles.item}>{item}</Text>
+    <View style={styles.item}><Text>{item}</Text></View>
   );
 
   const renderSection = (info: { section: SectionListData<string, poolData>; }) => (
-    <Text style={styles.link} onPress={() => Linking.openURL(info.section.url)}>
-      {info.section.title}
-    </Text>
+    <View style={styles.linkBox}>
+      <Text style={styles.link} onPress={() => Linking.openURL(info.section.url)}>
+        {info.section.title}
+      </Text>
+    </View>
   );
 
   if (!isLoadingComplete) {
@@ -266,9 +299,10 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <StatusBar />
-        <Text style={styles.title}>{appName}</Text>
+        <View style={styles.titleBox}><Text style={styles.title}>{appName}</Text></View>
         <SelectDropdown
-          buttonStyle={styles.dropDown}
+          dropdownStyle={styles.dropDown}
+          buttonStyle={styles.button}
           data={poolList}
           defaultValue={pools.get(defaultPool)}
           onSelect={(selectedItem, index) => {
