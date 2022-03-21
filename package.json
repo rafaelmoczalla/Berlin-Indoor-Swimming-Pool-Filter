@@ -14,7 +14,6 @@
     "eject": "expo eject",
     "test": "jest --watchAll",
     "build": "expo build:web",
-    "prebuild": "expo prebuild",
     "buildAPK": "turtle build:android --type apk --output ./out/swimmingPoolFilter.apk --keystore-path ../keystore/moczallr.jks --keystore-alias moczallr"
   },
   "jest": {
@@ -30,7 +29,6 @@
     "@types/node": "^17.0.21",
     "expo": "^44.0.6",
     "expo-asset": "~8.4.4",
-    "expo-cli": "^5.3.0",
     "expo-constants": "~13.0.0",
     "expo-font": "~10.0.4",
     "expo-linking": "~3.0.0",
@@ -50,6 +48,7 @@
     "@babel/core": "^7.12.9",
     "@types/react": "~17.0.21",
     "@types/react-native": "~0.64.12",
+    "expo-cli": "^5.3.0",
     "jest": "^26.6.3",
     "jest-expo": "~44.0.1",
     "react-test-renderer": "17.0.1",
