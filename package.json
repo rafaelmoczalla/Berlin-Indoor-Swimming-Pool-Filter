@@ -14,7 +14,9 @@
     "eject": "expo eject",
     "test": "jest --watchAll",
     "build": "expo build:web",
-    "buildAPK": "turtle build:android --type apk --output ./out/swimmingPoolFilter.apk --keystore-path ../keystore/moczallr.jks --keystore-alias moczallr"
+    "buildAPK": "turtle build:android --type apk --output ./out/swimmingPoolFilter.apk --keystore-path ../keystore/moczallr.jks --keystore-alias moczallr",
+    "buildAndroid": "eas build -p android",
+    "submitAndroid": "eas submit -p android"
   },
   "jest": {
     "preset": "jest-expo"
@@ -51,6 +53,7 @@
     "@expo/webpack-config": "^0.16.19",
     "@types/react": "~17.0.21",
     "@types/react-native": "~0.64.12",
+    "eas-cli": "^0.48.2",
     "expo-cli": "^5.3.0",
     "jest": "^26.6.3",
     "jest-expo": "~44.0.1",
