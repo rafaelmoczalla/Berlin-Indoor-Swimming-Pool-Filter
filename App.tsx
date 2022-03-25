@@ -3,7 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import SelectDropdown from 'react-native-select-dropdown'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Platform, StyleSheet, Text, SectionList, Linking, SectionListData, View, ScrollView } from 'react-native';
+import {
+  ActivityIndicator, Platform, StyleSheet, Text,
+  SectionList, Linking, SectionListData, View,
+  ScrollView
+} from 'react-native';
 
 import useCachedResources from './hooks/useCachedResources';
 import DomParser from 'dom-parser';
@@ -118,6 +122,7 @@ export default function App() {
   const [textList, setTextList] = useState<poolData[]>([]);
   const defaultPool = '79';
   const [selectedPool, setSelectedPool] = useState<string | null>(defaultPool);
+  const [state, setState] = useState<string>('loading');
   
   // list of indoor swimming pool indexes
   const pools = new Map<string, string>([
@@ -192,6 +197,7 @@ export default function App() {
       });
       
       setTextList(outList);
+      setState('done');
     });
   };
 
@@ -274,6 +280,20 @@ export default function App() {
       flex: 1,
       justifyContent: 'center'
     },
+    loading: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    scrollView: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%'
+    },
   });
 
   const renderItem = ({item = 'renderItem'}) => (
@@ -294,34 +314,42 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <StatusBar />
-        <View style={styles.titleBox}><Text style={styles.title}>{appName}</Text></View>
-        <SelectDropdown
-          dropdownStyle={styles.dropDown}
-          buttonStyle={styles.button}
-          data={poolList}
-          defaultValue={pools.get(defaultPool)}
-          onSelect={(selectedItem, index) => {
-            if (selectedItem === 'All') {
-              setSelectedPool(null);
-            } else {
-              var i = indexList[index];
-              if (i !== null && i !== undefined) {
-                setSelectedPool(i);
+        {state === 'loading' &&
+          <View style={styles.loading}>
+            <ActivityIndicator size='large' color='#ff0000'/>
+          </View>
+        }
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.titleBox}><Text style={styles.title}>{appName}</Text></View>
+          <SelectDropdown
+            dropdownStyle={styles.dropDown}
+            buttonStyle={styles.button}
+            data={poolList}
+            defaultValue={pools.get(defaultPool)}
+            onSelect={(selectedItem, index) => {
+              if (selectedItem === 'All') {
+                setSelectedPool(null);
+              } else {
+                var i = indexList[index];
+                if (i !== null && i !== undefined) {
+                  setSelectedPool(i);
+                }
               }
-            }
-          }}
-          buttonTextAfterSelection={(selectedItem, index) => {
-            return selectedItem;
-          }}
-          rowTextForSelection={(item, index) => {
-            return item;
-          }}
-        />
-        <SectionList sections={textList}
-          keyExtractor={(item, index) => item + index}
-          renderItem={renderItem}
-          renderSectionHeader={renderSection}
-        />
+              setState('loading');
+            }}
+            buttonTextAfterSelection={(selectedItem, index) => {
+              return selectedItem;
+            }}
+            rowTextForSelection={(item, index) => {
+              return item;
+            }}
+          />
+          <SectionList sections={textList}
+            keyExtractor={(item, index) => item + index}
+            renderItem={renderItem}
+            renderSectionHeader={renderSection}
+          />
+        </ScrollView>
       </SafeAreaProvider>
     );
   }
