@@ -313,7 +313,7 @@ export default function App() {
   } else {
     return (
       <SafeAreaProvider style={styles.scrollView}>
-        <StatusBar />
+        <StatusBar hidden/>
         {state === 'loading' &&
           <View style={styles.loading}>
             <ActivityIndicator size='large' color='#ff0000'/>
