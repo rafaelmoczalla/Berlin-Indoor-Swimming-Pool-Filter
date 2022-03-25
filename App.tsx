@@ -312,44 +312,42 @@ export default function App() {
     return null;
   } else {
     return (
-      <SafeAreaProvider>
+      <SafeAreaProvider style={styles.scrollView}>
         <StatusBar />
         {state === 'loading' &&
           <View style={styles.loading}>
             <ActivityIndicator size='large' color='#ff0000'/>
           </View>
         }
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.titleBox}><Text style={styles.title}>{appName}</Text></View>
-          <SelectDropdown
-            dropdownStyle={styles.dropDown}
-            buttonStyle={styles.button}
-            data={poolList}
-            defaultValue={pools.get(defaultPool)}
-            onSelect={(selectedItem, index) => {
-              if (selectedItem === 'All') {
-                setSelectedPool(null);
-              } else {
-                var i = indexList[index];
-                if (i !== null && i !== undefined) {
-                  setSelectedPool(i);
-                }
+        <View style={styles.titleBox}><Text style={styles.title}>{appName}</Text></View>
+        <SelectDropdown
+          dropdownStyle={styles.dropDown}
+          buttonStyle={styles.button}
+          data={poolList}
+          defaultValue={pools.get(defaultPool)}
+          onSelect={(selectedItem, index) => {
+            if (selectedItem === 'All') {
+              setSelectedPool(null);
+            } else {
+              var i = indexList[index];
+              if (i !== null && i !== undefined) {
+                setSelectedPool(i);
               }
-              setState('loading');
-            }}
-            buttonTextAfterSelection={(selectedItem, index) => {
-              return selectedItem;
-            }}
-            rowTextForSelection={(item, index) => {
-              return item;
-            }}
-          />
-          <SectionList sections={textList}
-            keyExtractor={(item, index) => item + index}
-            renderItem={renderItem}
-            renderSectionHeader={renderSection}
-          />
-        </ScrollView>
+            }
+            setState('loading');
+          }}
+          buttonTextAfterSelection={(selectedItem, index) => {
+            return selectedItem;
+          }}
+          rowTextForSelection={(item, index) => {
+            return item;
+          }}
+        />
+        <SectionList sections={textList}
+          keyExtractor={(item, index) => item + index}
+          renderItem={renderItem}
+          renderSectionHeader={renderSection}
+        />
       </SafeAreaProvider>
     );
   }
