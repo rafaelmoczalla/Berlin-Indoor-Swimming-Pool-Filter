@@ -192,8 +192,11 @@ export default function App() {
       
       list.forEach((item: (poolData | null)) => {
         // only swimming pools with free spots
-        if (item !== null)
+        if (item !== null) {
+          if (list.length < 2)
+            item.title='Ticket Shop';
           outList.push(item);
+        }
       });
       
       setTextList(outList);
