@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "berlinIndoorSwimmingPoolFilter",
+    "name": "Pool Filter",
     "slug": "berlinIndoorSwimmingPoolFilter",
-    "version": "1.0.1",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -23,6 +23,7 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 4,
       "package": "com.moczalla.poolFilter",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
