@@ -1,5 +1,5 @@
 {
-  "name": "berlinindoorswimmingpoolfilter",
+  "name": "pool_filter",
   "version": "1.0.4",
   "main": "node_modules/expo/AppEntry.js",
   "engines": {
@@ -13,8 +13,9 @@
     "eject": "expo eject",
     "test": "jest --watchAll",
     "build": "expo build:web",
-    "androidAPK": "turtle build:android --type apk --output ./out/swimmingPoolFilter.apk --keystore-path ../keystore/moczallr.jks --keystore-alias moczallr",
-    "androidSubmit": "eas build --platform android --local --output=./out/build.aab && eas submit --platform android --path=./out/build.aab"
+    "clean": "expo r -c",
+    "androidSubmit": "eas build --platform android --local --output=./out/build.aab && eas submit --platform android --path=./out/build.aab",
+    "androidAPK": "java -jar \"../bundletool-all-1.9.0.jar\" build-apks --bundle=\"./out/build.aab\" --output=\"./out/build.apks\" --ks=\"../keystore/googlePlay.keystore\" --ks-key-alias=pool-filter-upload --mode=universal"
   },
   "jest": {
     "preset": "jest-expo"
@@ -59,7 +60,6 @@
     "jest-expo": "~44.0.1",
     "react-test-renderer": "17.0.2",
     "sharp-cli": "^1.15.0",
-    "turtle-cli": "^0.25.0",
     "typescript": "~4.3.5"
   },
   "private": true
